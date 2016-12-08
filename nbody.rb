@@ -4,41 +4,52 @@ require './body'
 
 class NbodySimulation < Gosu::Window
 
-  attr_accessor :bodies, :background_image
+  attr_accessor :bodies, :background_image, :size
 
-  def initialize(file)
-    super(640, 640, false)
+  def initialize(file, size, full)
+    super(size, size, full)
     self.caption = "NBody simulation"
     @background_image = Gosu::Image.new("images/space.jpg", tileable: true)
 
     simulation = open(file)
     list = simulation.read
     list = list.split(/\n/)
-    size = list[1]
-    size = size.split('e')
-    size = size[0].to_i * (10 ** size[1].to_i)
-    unit = 640 / size.to_f
-    puts size
-    puts unit
+    num_bodies = list[0].to_i + 2
+    radius = list[1].to_f / size
 
     @bodies = Array.new
 
-    list.each do |line|
+    for i in 2...num_bodies
+      line = list[i]
       line = line.split
       if line.length > 4
         line.each do |x|
           x = x.to_f
         end
         # puts line[5]
-        @bodies.push(Body.new(line[0], line[1], line[2], line[3], line[4], line[5]))
+        @bodies.push(Body.new(line[0], line[1], line[2], line[3], line[4], line[5], radius))
       end
     end
   end
 
   def update
     bodies.each do |body|
-      body.calculate_force(bodies)
-      body.calculate_position
+      # for i in 0...bodies.length
+      #   if bodies[i].image != body.image
+      #       bodies[i].calculate_force(body)
+      #     end
+      #  end
+
+      bodies.each do |other_body|
+        if body.image != other_body.image
+          body.calculate_force(other_body)
+        end
+      end
+
+
+      body.calc_acc
+      body.calc_velocity
+      body.calc_position
     end
   end
 
@@ -58,8 +69,11 @@ end
 if ARGV.length == 0
   file = "simulations/planets.txt"
 else
-  file = "simulations" + ARGV
+  sim = ARGV[0].to_s + ".txt"
+  puts sim
+  file = "simulations/" + sim
+  puts file
 end
 
-window = NbodySimulation.new(file)
+window = NbodySimulation.new(file, 640, false)
 window.show

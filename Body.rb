@@ -4,9 +4,9 @@ G = 6.674e-11
 
 class Body
 
-  attr_accessor :x, :y, :vel_x, :vel_y, :mass, :image, :force_x, :force_y
+  attr_accessor :image, :x, :y, :mass
 
-  def initialize(x, y, vel_x, vel_y, mass, image)
+  def initialize(x, y, vel_x, vel_y, mass, image, radius)
     @x = x.to_f
     @y = y.to_f
     @vel_x = vel_x.to_f
@@ -16,43 +16,45 @@ class Body
     @image = Gosu::Image.new(file)
     # puts x
     # puts y
-    @force_x = 0.0
-    @force_y = 0.0
+    @size = radius * 2
+    @acc_x = @acc_y = @force_x = @force_y = @scaled_x = @scaled_y
   end
 
   def draw
-    @image.draw_rot(x.to_f + 320, y.to_f + 320, 1, 90.0)
+    image.draw(@scaled_x.to_f - image.width / 2.0 - 320, @scaled_y.to_f - image.height / 2.0 - 320, 1)
   end
 
-  def calculate_force(bodies)
-    bodies.each do |body|
-      if image != body.image
-        r = calculate_r(body)
-        r = r.to_f
-        force_on = (G * mass * body.mass) / (r ** 2)
-        force_x = force_x.to_f + (force_on.to_f * (body.x - x).abs) / r
-        force_y = force_x.to_f + (force_on.to_f * (body.y - y).abs) / r
-      end
-    end
-  end
+  def calculate_force(body)
+    distance_x = @x - body.x
+    distance_y = @y - body.y
 
-  def calculate_position
-    x = calculate(force_x, vel_x, x)
-    y = calculate(force_y, vel_y, y)
-  end
+    r = Math.sqrt(distance_x ** 2 + distance_y ** 2)
 
-  def calculate(force, vel, pos)
-    a = force / mass
-    v = vel + a * 25000
-    return pos.to_f + v * 25000
+    force_on = ((G * @mass * body.mass) / r**2).to_f
+    @force_x = @force_x.to_f - (force_on * (x - body.x)) / r
+		@force_y = @force_y.to_f - (force_on * (y - body.y)) / r
 
   end
 
-  def calculate_r(body)
-    x1 = body.x.to_f
-    y1 = body.y.to_f
-    a = (x1 - @x) ** 2 + (y1 - @y) ** 2
-    return Math.sqrt(a)
+  def calc_acc
+    @acc_x = @force_x.to_f / @mass
+    @acc_y = @force_y.to_f / @mass
+
+    @force_x = @force_y = 0
   end
+
+  def calc_velocity
+    @vel_x = @vel_x.to_f + 25000 * @acc_x.to_f
+    @vel_y = @vel_y.to_f + 25000 * @acc_y.to_f
+  end
+
+  def calc_position
+    @x = @x.to_f + @vel_x * 25000
+    @y = @y.to_f + @vel_y * 25000
+    @scaled_x = (@x / @size) + 640
+    @scaled_y = (-@y / @size) + 640
+  end
+
+
 
 end
