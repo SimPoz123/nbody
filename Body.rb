@@ -14,8 +14,6 @@ class Body
     @mass = mass.to_f
     file = "images/" + image
     @image = Gosu::Image.new(file)
-    # puts x
-    # puts y
     @size = radius * 2
     @acc_x = @acc_y = @force_x = @force_y = @scaled_x = @scaled_y
   end

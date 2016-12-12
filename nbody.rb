@@ -26,7 +26,6 @@ class NbodySimulation < Gosu::Window
         line.each do |x|
           x = x.to_f
         end
-        # puts line[5]
         @bodies.push(Body.new(line[0], line[1], line[2], line[3], line[4], line[5], radius))
       end
     end
@@ -34,14 +33,9 @@ class NbodySimulation < Gosu::Window
 
   def update
     bodies.each do |body|
-      # for i in 0...bodies.length
-      #   if bodies[i].image != body.image
-      #       bodies[i].calculate_force(body)
-      #     end
-      #  end
 
       bodies.each do |other_body|
-        if body.image != other_body.image
+        if body != other_body
           body.calculate_force(other_body)
         end
       end
